@@ -1,137 +1,141 @@
-import dotenv from "dotenv";
-import {
-  Address,
-  createPublicClient,
-  decodeAbiParameters,
-  encodeFunctionData,
-  http,
-  parseAbi,
-} from "viem";
+import { createPublicClient, erc20Abi, http } from "viem";
 import { arbitrumSepolia } from "viem/chains";
-import { MULTICALL3_ABI } from "./config/abi";
-dotenv.config();
 
-const MULTICALL3_ADDRESS =
-  "0xcA11bde05977b3631167028862bE2a173976CA11" as const;
-const AVG_BLOCK_TIME = 12; // Average block time in seconds for Arbitrum Sepolia
-
-const contractAbi = parseAbi([
-  "function getUserPosition(address user) view returns (uint256 principal, uint256 interest, uint256 fee, uint256 netWithdrawable)",
-]);
-
-// Replace with the actual deployed contract address:
-const contractAddress = "0xYourContractAddressHere";
-
-// The user whose position we want to check:
-const userAddress = "0x1f29312f134C79984bA4b21840f2C3DcF57b9c85";
-
-// Create a viem client connected to your archive node provider
+// Configure the client with your preferred RPC provider
 const client = createPublicClient({
   chain: arbitrumSepolia,
   transport: http(
-    `https://arbitrum-sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`
-  ),
+    "https://arbitrum-sepolia.infura.io/v3/a78ea67f650a46e8bd97f3262d1cef43"
+  ), // Replace with your RPC URL
 });
 
-type UserPosition = [bigint, bigint, bigint, bigint];
-
-type MulticallResult = {
-  success: boolean;
-  returnData: `0x${string}`;
-}[];
-
-async function estimateHistoricalBlock(hoursAgo: number): Promise<bigint> {
-  const latestBlock = await client.getBlock();
-  if (!latestBlock) throw new Error("No latest block found!");
-
-  // Calculate blocks per hour based on average block time
-  const blocksPerHour = Math.floor(3600 / AVG_BLOCK_TIME);
-  const blockDiff = BigInt(blocksPerHour * hoursAgo);
-
-  const estimatedBlock = latestBlock.number - blockDiff;
-  console.log(`Latest block: #${latestBlock.number}`);
-  console.log(`Estimated ${hoursAgo} hours ago block: #${estimatedBlock}`);
-
-  return estimatedBlock;
+// Timeframe enum
+enum Timeframe {
+  H = "H", // Hour
+  D = "D", // Day
+  W = "W", // Week
+  M = "M", // Month
+  Y = "Y", // Year
+  ALL = "ALL", // All time
 }
 
-/**
- * Fetches multiple user positions in a single call using Multicall V3
- */
-async function fetchUserPositions(
-  blockNumbers: (bigint | "latest")[]
-): Promise<UserPosition[]> {
-  console.log(`\nFetching positions for blocks: ${blockNumbers.join(", ")}`);
+// Calculate blocks based on timeframe (4 blocks per second)
+function getBlocksForTimeframe(timeframe: Timeframe): bigint {
+  const BLOCKS_PER_SECOND = 4;
+  const BLOCKS_PER_HOUR = BLOCKS_PER_SECOND * 3600;
 
-  const calls = blockNumbers.map((blockNumber) => ({
-    target: contractAddress as Address,
-    allowFailure: false,
-    callData: encodeFunctionData({
-      abi: contractAbi,
-      functionName: "getUserPosition",
-      args: [userAddress],
-    }),
-  }));
-
-  const results = (await client.readContract({
-    address: MULTICALL3_ADDRESS,
-    abi: MULTICALL3_ABI,
-    functionName: "aggregate3",
-    args: [calls],
-    blockNumber: undefined, // We'll handle this at the multicall level
-  })) as MulticallResult;
-
-  console.log(`Successfully fetched ${results.length} positions`);
-
-  return results.map((result) => {
-    if (!result.success) {
-      throw new Error("Multicall failed for one or more positions");
-    }
-    // Decode the return data into our UserPosition type
-    const decoded = decodeAbiParameters(
-      [
-        { name: "principal", type: "uint256" },
-        { name: "interest", type: "uint256" },
-        { name: "fee", type: "uint256" },
-        { name: "netWithdrawable", type: "uint256" },
-      ],
-      result.returnData
-    ) as unknown as UserPosition;
-    return decoded;
-  });
+  switch (timeframe) {
+    case Timeframe.H:
+      return BigInt(BLOCKS_PER_HOUR);
+    case Timeframe.D:
+      return BigInt(BLOCKS_PER_HOUR * 24);
+    case Timeframe.W:
+      return BigInt(BLOCKS_PER_HOUR * 24 * 7);
+    case Timeframe.M:
+      return BigInt(BLOCKS_PER_HOUR * 24 * 30);
+    case Timeframe.Y:
+      return BigInt(BLOCKS_PER_HOUR * 24 * 365);
+    case Timeframe.ALL:
+      return BigInt(0); // Will use block 0 as starting point
+    default:
+      throw new Error("Invalid timeframe");
+  }
 }
 
-async function main() {
-  // 1) Estimate block from 24 hours ago
-  const block24hAgo = await estimateHistoricalBlock(24);
-  console.log(`Using block from 24h ago: ${block24hAgo}`);
+async function getHistoricalBalances(
+  walletAddress: `0x${string}`,
+  timeframe: Timeframe,
+  dataPrecision: number = 10,
+  contractCreatedBlock: bigint = BigInt(90453629)
+) {
+  try {
+    let rpcCalls = 0;
+    console.log("Starting RPC calls tracking...");
 
-  // 2) Read positions from that block vs. latest using multicall
-  const positions = await fetchUserPositions([block24hAgo, "latest"]);
-  const [pos24hAgo, posLatest] = positions;
+    // Get current block
+    const currentBlock = await client.getBlockNumber();
+    console.log("RPC Call #" + ++rpcCalls + ": getBlockNumber");
 
-  // 3) Print results
-  console.log("\n--- Position 24 hours ago ---");
-  console.log(`Block Number: ${block24hAgo}`);
-  console.log(`Principal:       ${pos24hAgo[0]}`);
-  console.log(`Interest:        ${pos24hAgo[1]}`);
-  console.log(`Fee:             ${pos24hAgo[2]}`);
-  console.log(`Net Withdrawable:${pos24hAgo[3]}`);
+    // Calculate blocks to go back based on timeframe
+    const blocksToGoBack = getBlocksForTimeframe(timeframe);
 
-  console.log("\n--- Current Position ---");
-  console.log(`Block Number: latest`);
-  console.log(`Principal:       ${posLatest[0]}`);
-  console.log(`Interest:        ${posLatest[1]}`);
-  console.log(`Fee:             ${posLatest[2]}`);
-  console.log(`Net Withdrawable:${posLatest[3]}`);
+    // For "ALL" timeframe, we'll start from contract creation block, otherwise calculate start block
+    // but never go before contract creation block
+    const calculatedStartBlock =
+      timeframe === Timeframe.ALL
+        ? contractCreatedBlock
+        : currentBlock - blocksToGoBack;
+    const startBlock =
+      calculatedStartBlock < contractCreatedBlock
+        ? contractCreatedBlock
+        : calculatedStartBlock;
+
+    const interval = (currentBlock - startBlock) / BigInt(dataPrecision - 1); // intervals for dataPrecision points
+
+    // Generate block numbers from current block going back to start block
+    const blockNumbers = Array.from(
+      { length: dataPrecision },
+      (_, i) => currentBlock - interval * BigInt(i)
+    );
+
+    // First, get all blocks in parallel to minimize RPC calls
+    const blocks = await Promise.all(
+      blockNumbers.map(async (blockNumber) => {
+        const block = await client.getBlock({ blockNumber });
+        console.log(
+          "RPC Call #" + ++rpcCalls + ": getBlock for block " + blockNumber
+        );
+        return block;
+      })
+    );
+
+    // Then, get all balances in parallel
+    const balances = await Promise.all(
+      blockNumbers.map(async (blockNumber, index) => {
+        const balance = await client.readContract({
+          address: "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+          abi: erc20Abi,
+          functionName: "balanceOf",
+          args: [walletAddress],
+          blockNumber,
+        });
+        console.log(
+          "RPC Call #" +
+            ++rpcCalls +
+            ": readContract balanceOf for block " +
+            blockNumber
+        );
+        const formattedBalance = Number(balance) / 10 ** 6;
+
+        return {
+          blockNumber: Number(blockNumber),
+          balance: formattedBalance,
+          timestamp: blocks[index].timestamp,
+        };
+      })
+    );
+
+    console.log(`\nTotal RPC calls made: ${rpcCalls}`);
+    console.log("1 call for getting current block");
+    console.log(`${dataPrecision} calls for getting block data`);
+    console.log(`${dataPrecision} calls for getting balances`);
+    console.log(`Total: ${1 + 2 * dataPrecision} RPC calls per execution\n`);
+
+    console.log(
+      `Historical balances for ${walletAddress} over the last ${timeframe}:`
+    );
+    balances.forEach(({ blockNumber, balance, timestamp }) => {
+      const date = new Date(Number(timestamp) * 1000);
+      console.log(`Block ${blockNumber} (${date.toISOString()}): ${balance}`);
+    });
+
+    return balances;
+  } catch (error) {
+    console.error("Error fetching historical balances:", error);
+    throw error;
+  }
 }
 
-main()
-  .then(() => {
-    console.log("\nScript completed successfully.\n");
-    process.exit(0);
-  })
-  .catch((err) => {
-    console.error("Error running script:", err);
-    process.exit(1);
-  });
+// Example usage
+const exampleWallet = "0x1f29312f134C79984bA4b21840f2C3DcF57b9c85" as const;
+getHistoricalBalances(exampleWallet, Timeframe.H, 5);
