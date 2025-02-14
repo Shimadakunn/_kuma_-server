@@ -1,11 +1,10 @@
-import { Timeframe, getBlocksForTimeframe } from "./config/BlocksTime";
-import { colors } from "./config/Colors";
+import { Timeframe, getBlocksForTimeframe } from "../config/BlocksTime";
 import {
   FACTORY_ABI,
   FACTORY_ADDRESS,
   FACTORY_CREATION_BLOCK,
-} from "./config/Factory";
-import { client } from "./config/PublicClient";
+} from "../config/Factory";
+import { client } from "../config/PublicClient";
 
 interface PositionData {
   blockNumber: number;
@@ -129,19 +128,6 @@ export async function getPositions(
       },
     };
 
-    // Keep console logs for debugging but return structured data
-    console.log("1 call for getting current block");
-    console.log(`${dataPrecision} calls for getting block data`);
-    console.log(`${dataPrecision} calls for getting positions`);
-    console.log(
-      `${colors.yellow}Total: ${1 + 2 * dataPrecision} RPC calls per execution${
-        colors.reset
-      }\n`
-    );
-
-    console.log(
-      `${colors.bright}Historical positions for ${colors.cyan}${walletAddress}${colors.reset} over the last ${colors.green}${timeframe}${colors.reset}:`
-    );
     positions.forEach(({ blockNumber, timestamp, data }) => {
       const date = new Date(timestamp * 1000);
       const formattedDate = date.toLocaleDateString("en-US", {
@@ -152,32 +138,6 @@ export async function getPositions(
         minute: "2-digit",
         hour12: false,
       });
-      console.log(
-        `\n${colors.blue}${formattedDate}${colors.reset} (${
-          colors.magenta
-        }${blockNumber}${colors.reset})
-         ${colors.bright}Vault Balance:${colors.reset}        ${
-          colors.green
-        }${data.vaultBalance.padStart(12)}${colors.reset}
-         ${colors.bright}Last Recorded Balance:${colors.reset} ${
-          colors.yellow
-        }${data.lastRecordedBalance.padStart(12)}${colors.reset}
-         ${colors.bright}Pending Yield:${colors.reset}        ${
-          colors.cyan
-        }${data.pendingYield.padStart(12)}${colors.reset}
-         ${colors.bright}Pending Fee:${colors.reset}          ${
-          colors.red
-        }${data.pendingFee.padStart(12)}${colors.reset}
-         ${colors.bright}User Balance:${colors.reset}         ${
-          colors.green
-        }${data.userBalance.padStart(12)}${colors.reset}
-         ${colors.bright}User Principal:${colors.reset}       ${
-          colors.yellow
-        }${data.userPrincipal.padStart(12)}${colors.reset}
-         ${colors.bright}Total Collected Fees:${colors.reset} ${
-          colors.red
-        }${data.totalCollectedFees.padStart(12)}${colors.reset}`
-      );
     });
 
     return response;

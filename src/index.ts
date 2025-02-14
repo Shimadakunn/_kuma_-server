@@ -1,6 +1,6 @@
 import express, { NextFunction } from "express";
 import { Timeframe } from "./config/BlocksTime";
-import { getPositions } from "./getPositions";
+import { getCurrentBalance, getPositions } from "./endpoints";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -34,6 +34,22 @@ const validateWalletAddress = (
   next();
 };
 
+// GET endpoint for current balance
+app.get(
+  "/balance/:walletAddress",
+  validateWalletAddress,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const { walletAddress } = req.params;
+      const balance = await getCurrentBalance(walletAddress as `0x${string}`);
+      res.json(balance);
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
 // GET endpoint for positions
 app.get(
   "/positions/:walletAddress/:timeframe/:precision?",
@@ -56,7 +72,7 @@ app.get(
         precision
       );
 
-      res.json({ positions });
+      res.json(positions);
     } catch (error) {
       console.error("Error fetching positions:", error);
       res.status(500).json({ error: "Internal server error" });
