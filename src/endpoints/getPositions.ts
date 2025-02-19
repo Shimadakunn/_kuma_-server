@@ -8,16 +8,13 @@ import { client } from "../config/PublicClient";
 
 interface PositionData {
   blockNumber: number;
-  timestamp: number;
-  data: {
-    vaultBalance: string;
-    lastRecordedBalance: string;
-    pendingYield: string;
-    pendingFee: string;
-    userBalance: string;
-    userPrincipal: string;
-    totalCollectedFees: string;
-  };
+  vaultBalance: string;
+  lastRecordedBalance: string;
+  pendingYield: string;
+  pendingFee: string;
+  userBalance: string;
+  userPrincipal: string;
+  totalCollectedFees: string;
 }
 
 interface PositionsResponse {
@@ -89,15 +86,13 @@ export async function getPositions(
 
         return {
           blockNumber: Number(blockNumber),
-          data: {
-            vaultBalance: formatValue(position[0]),
-            lastRecordedBalance: formatValue(position[1]),
-            pendingYield: formatValue(position[2]),
-            pendingFee: formatValue(position[3]),
-            userBalance: formatValue(position[4]),
-            userPrincipal: formatValue(position[5]),
-            totalCollectedFees: formatValue(position[6]),
-          },
+          vaultBalance: formatValue(position[0]),
+          lastRecordedBalance: formatValue(position[1]),
+          pendingYield: formatValue(position[2]),
+          pendingFee: formatValue(position[3]),
+          userBalance: formatValue(position[4]),
+          userPrincipal: formatValue(position[5]),
+          totalCollectedFees: formatValue(position[6]),
         } as PositionData;
       })
     );
