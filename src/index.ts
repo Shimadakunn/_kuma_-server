@@ -58,7 +58,7 @@ app.get(
   async (req: express.Request, res: express.Response) => {
     try {
       const { walletAddress, timeframe } = req.params;
-      const precision = parseInt(req.params.precision) || 20; // Default to 20 if not specified
+      const precision = parseInt(req.params.precision) || 10; // Default to 20 if not specified
 
       if (precision < 1 || precision > 100) {
         return res

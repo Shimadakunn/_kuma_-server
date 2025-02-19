@@ -22,7 +22,7 @@ interface PositionData {
 
 interface PositionsResponse {
   status: "success" | "error";
-  data: {
+  data?: {
     wallet: string;
     timeframe: string;
     startBlock: number;
@@ -72,14 +72,6 @@ export async function getPositions(
       (_, i) => currentBlock - interval * BigInt(i)
     );
 
-    // Get all blocks timestamps in parallel
-    const blocks = await Promise.all(
-      blockNumbers.map(async (blockNumber) => {
-        const block = await client.getBlock({ blockNumber });
-        return block;
-      })
-    );
-
     // Then, get all positions in parallel
     const positions = await Promise.all(
       blockNumbers.map(async (blockNumber, index) => {
@@ -97,7 +89,6 @@ export async function getPositions(
 
         return {
           blockNumber: Number(blockNumber),
-          timestamp: Number(blocks[index].timestamp),
           data: {
             vaultBalance: formatValue(position[0]),
             lastRecordedBalance: formatValue(position[1]),
@@ -128,35 +119,11 @@ export async function getPositions(
       },
     };
 
-    positions.forEach(({ blockNumber, timestamp, data }) => {
-      const date = new Date(timestamp * 1000);
-      const formattedDate = date.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-    });
-
     return response;
   } catch (error) {
     console.error("Error fetching historical positions:", error);
     return {
       status: "error",
-      data: {
-        wallet: walletAddress,
-        timeframe: timeframe,
-        startBlock: 0,
-        endBlock: 0,
-        positions: [],
-        metadata: {
-          dataPrecision,
-          totalBlocks: 0,
-          contractAddress: FACTORY_ADDRESS,
-        },
-      },
       error: {
         message:
           error instanceof Error ? error.message : "Unknown error occurred",
