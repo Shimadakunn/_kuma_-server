@@ -19,18 +19,7 @@ interface PositionData {
 
 interface PositionsResponse {
   status: "success" | "error";
-  data?: {
-    wallet: string;
-    timeframe: string;
-    startBlock: number;
-    endBlock: number;
-    positions: PositionData[];
-    metadata: {
-      dataPrecision: number;
-      totalBlocks: number;
-      contractAddress: string;
-    };
-  };
+  data?: PositionData[];
   error?: {
     message: string;
     code?: string;
@@ -100,18 +89,7 @@ export async function getPositions(
     // Format the response
     const response: PositionsResponse = {
       status: "success",
-      data: {
-        wallet: walletAddress,
-        timeframe: timeframe,
-        startBlock: Number(startBlock),
-        endBlock: Number(currentBlock),
-        positions: positions,
-        metadata: {
-          dataPrecision,
-          totalBlocks: Number(currentBlock - startBlock),
-          contractAddress: FACTORY_ADDRESS,
-        },
-      },
+      data: positions,
     };
 
     return response;
