@@ -61,28 +61,45 @@ export async function getPositions(
     // Then, get all positions in parallel
     const positions = await Promise.all(
       blockNumbers.map(async (blockNumber, index) => {
-        const position = (await client.readContract({
-          address: FACTORY_ADDRESS,
-          abi: FACTORY_ABI,
-          functionName: "position",
-          args: [walletAddress],
-          blockNumber,
-        })) as [bigint, bigint, bigint, bigint, bigint, bigint, bigint];
+        try {
+          const position = (await client.readContract({
+            address: FACTORY_ADDRESS,
+            abi: FACTORY_ABI,
+            functionName: "position",
+            args: [walletAddress],
+            blockNumber,
+          })) as [bigint, bigint, bigint, bigint, bigint, bigint, bigint];
 
-        // Format BigInt values with proper decimals
-        const formatValue = (value: bigint) =>
-          (Number(value) / 10 ** 6).toFixed(6);
+          // Format BigInt values with proper decimals
+          const formatValue = (value: bigint) =>
+            (Number(value) / 10 ** 6).toFixed(6);
 
-        return {
-          blockNumber: Number(blockNumber),
-          vaultBalance: formatValue(position[0]),
-          lastRecordedBalance: formatValue(position[1]),
-          pendingYield: formatValue(position[2]),
-          pendingFee: formatValue(position[3]),
-          userBalance: formatValue(position[4]),
-          userPrincipal: formatValue(position[5]),
-          totalCollectedFees: formatValue(position[6]),
-        } as PositionData;
+          return {
+            blockNumber: Number(blockNumber),
+            vaultBalance: formatValue(position[0]),
+            lastRecordedBalance: formatValue(position[1]),
+            pendingYield: formatValue(position[2]),
+            pendingFee: formatValue(position[3]),
+            userBalance: formatValue(position[4]),
+            userPrincipal: formatValue(position[5]),
+            totalCollectedFees: formatValue(position[6]),
+          } as PositionData;
+        } catch (error) {
+          console.warn(
+            `Failed to read contract at block ${blockNumber}:`,
+            error
+          );
+          return {
+            blockNumber: Number(blockNumber),
+            vaultBalance: "0.000000",
+            lastRecordedBalance: "0.000000",
+            pendingYield: "0.000000",
+            pendingFee: "0.000000",
+            userBalance: "0.000000",
+            userPrincipal: "0.000000",
+            totalCollectedFees: "0.000000",
+          } as PositionData;
+        }
       })
     );
 
