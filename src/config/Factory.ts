@@ -1,4 +1,4 @@
-const FACTORY_ADDRESS = "0x1c3e4538972BED687d6Cbd70699e4d039EB8F9b1";
+const FACTORY_ADDRESS = "0x945b997Dbcc818284e7c188F86c09719C7E84A0a";
 const FACTORY_ABI = [
   {
     inputs: [
@@ -10,6 +10,16 @@ const FACTORY_ABI = [
     ],
     stateMutability: "nonpayable",
     type: "constructor",
+  },
+  { inputs: [], name: "Create2EmptyBytecode", type: "error" },
+  { inputs: [], name: "FailedDeployment", type: "error" },
+  {
+    inputs: [
+      { internalType: "uint256", name: "balance", type: "uint256" },
+      { internalType: "uint256", name: "needed", type: "uint256" },
+    ],
+    name: "InsufficientBalance",
+    type: "error",
   },
   {
     anonymous: false,
@@ -63,6 +73,13 @@ const FACTORY_ABI = [
   },
   {
     inputs: [],
+    name: "SALT",
+    outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
     name: "aUsdc",
     outputs: [{ internalType: "contract IERC20", name: "", type: "address" }],
     stateMutability: "view",
@@ -92,7 +109,7 @@ const FACTORY_ABI = [
   {
     inputs: [],
     name: "createVault",
-    outputs: [],
+    outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "nonpayable",
     type: "function",
   },
