@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Action } from "@prisma/client";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 const prisma = new PrismaClient().$extends(withAccelerate());
 
 export async function registerUserAction(
   walletAddress: string,
-  action: "DEPOSIT" | "WITHDRAW",
+  action: Action,
   amount: string
 ) {
   const user = await prisma.user.findUnique({
@@ -24,7 +24,7 @@ export async function registerUserAction(
     data: {
       userId: user.id,
       timestamp: new Date().toISOString(),
-      action: action as "DEPOSIT" | "WITHDRAW",
+      action: action,
       amount: amount,
       status: "success",
     },

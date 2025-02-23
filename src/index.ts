@@ -1,6 +1,7 @@
 import express from "express";
 import * as endpoints from "./endpoints";
 import * as middleware from "./middleware";
+import { Action } from "@prisma/client";
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -106,7 +107,7 @@ app.get(
     const { walletAddress, action, amount } = req.params;
     const actionData = await endpoints.registerUserAction(
       walletAddress,
-      action as "DEPOSIT" | "WITHDRAW",
+      action as Action,
       amount
     );
     res.json(actionData);
@@ -122,6 +123,20 @@ app.get(
       res.json(result);
     } catch (error) {
       console.error("Error registering all users positions:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// Register all users rewards
+app.get(
+  "/register-all-users-rewards",
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const result = await endpoints.registerAllUsersRewards();
+      res.json(result);
+    } catch (error) {
+      console.error("Error registering rewards:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
