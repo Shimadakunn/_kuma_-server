@@ -2,8 +2,8 @@ name: Register User Positions
 
 on:
   schedule:
-    # Run every hour
-    - cron: "0 * * * *"
+    # Run every 6 minutes
+    - cron: "*/6 * * * *"
   workflow_dispatch: # Allows manual triggering
 
 jobs:
