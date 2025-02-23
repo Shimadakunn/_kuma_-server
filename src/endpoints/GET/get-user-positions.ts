@@ -3,11 +3,12 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 
 const prisma = new PrismaClient().$extends(withAccelerate());
 
-type Timeframe = "H" | "D" | "M" | "Y";
+type Timeframe = "H" | "D" | "W" | "M" | "Y";
 
 const timeframeToMilliseconds = {
   H: 60 * 60 * 1000, // 1 hour
   D: 24 * 60 * 60 * 1000, // 1 day
+  W: 7 * 24 * 60 * 60 * 1000, // 1 week
   M: 30 * 24 * 60 * 60 * 1000, // ~1 month
   Y: 365 * 24 * 60 * 60 * 1000, // ~1 year
 };
