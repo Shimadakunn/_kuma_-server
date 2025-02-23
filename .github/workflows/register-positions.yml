@@ -13,6 +13,17 @@ jobs:
     steps:
       - name: Call Register Positions API
         run: |
-          curl -X GET \
+          response=$(curl -s -w "\n%{http_code}" -X GET \
             -H "x-api-key: ${{ secrets.API_KEY }}" \
-            ${{ secrets.API_URL }}/register-all-users-position
+            ${{ secrets.API_URL }}/register-all-users-position)
+
+          status_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Status code: $status_code"
+          echo "Response body: $body"
+
+          if [ "$status_code" -lt 200 ] || [ "$status_code" -ge 300 ]; then
+            echo "API call failed with status code $status_code"
+            exit 1
+          fi
