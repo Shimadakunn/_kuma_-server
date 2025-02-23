@@ -1,89 +1,129 @@
-import express, { NextFunction } from "express";
-import { Timeframe } from "./config/BlocksTime";
-import { getCurrentBalance, getPositions } from "./endpoints";
-
+import express from "express";
+import * as endpoints from "./endpoints";
+import * as middleware from "./middleware";
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware to validate timeframe
-const validateTimeframe = (
-  req: express.Request,
-  res: express.Response,
-  next: NextFunction
-) => {
-  const timeframe = req.params.timeframe.toUpperCase();
-  if (!Object.values(Timeframe).includes(timeframe as Timeframe)) {
-    return res.status(400).json({
-      error: "Invalid timeframe",
-      validTimeframes: Object.values(Timeframe),
-    });
-  }
-  next();
-};
+app.use(express.json());
 
-// Middleware to validate wallet address
-const validateWalletAddress = (
-  req: express.Request,
-  res: express.Response,
-  next: NextFunction
-) => {
-  const walletAddress = req.params.walletAddress;
-  if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
-    return res.status(400).json({ error: "Invalid wallet address format" });
-  }
-  next();
-};
+// Apply API key validation to all routes
+app.use(middleware.validateApiKey);
 
-// GET endpoint for current balance
+// ==== GET ====
+// Get user positions
 app.get(
-  "/balance/:walletAddress",
-  validateWalletAddress,
-  async (req: express.Request, res: express.Response) => {
-    try {
-      const { walletAddress } = req.params;
-      const balance = await getCurrentBalance(walletAddress as `0x${string}`);
-      res.json(balance);
-    } catch (error) {
-      console.error("Error fetching balance:", error);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  }
-);
-
-// GET endpoint for positions
-app.get(
-  "/positions/:walletAddress/:timeframe/:precision?",
-  validateWalletAddress,
-  validateTimeframe,
+  "/get-user-positions/:walletAddress/:timeframe",
+  middleware.validateWalletAddress,
+  middleware.validateTimeframe,
   async (req: express.Request, res: express.Response) => {
     try {
       const { walletAddress, timeframe } = req.params;
-      const precision = parseInt(req.params.precision) || 10; // Default to 20 if not specified
-
-      if (precision < 1 || precision > 100) {
-        return res
-          .status(400)
-          .json({ error: "Precision must be between 1 and 100" });
-      }
-
-      const positions = await getPositions(
-        walletAddress as `0x${string}`,
-        timeframe.toUpperCase() as Timeframe,
-        precision
+      const positions = await endpoints.getUserPositions(
+        walletAddress,
+        timeframe as "H" | "D" | "M" | "Y"
       );
+
+      if (!positions) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
       res.json(positions);
     } catch (error) {
-      console.error("Error fetching positions:", error);
+      console.error("Error fetching user positions:", error);
       res.status(500).json({ error: "Internal server error" });
     }
   }
 );
 
-// Health check endpoint
-app.get("/health", (req: express.Request, res: express.Response) => {
-  res.json({ status: "healthy" });
-});
+// Get user actions
+app.get(
+  "/get-user-actions/:walletAddress",
+  middleware.validateWalletAddress,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const { walletAddress } = req.params;
+      const actionData = await endpoints.getUserActions(walletAddress);
+
+      if (!actionData) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json(actionData);
+    } catch (error) {
+      console.error("Error fetching user actions:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// ==== POST ====
+// Register user
+app.get(
+  "/register-user/:walletAddress/:email",
+  middleware.validateWalletAddress,
+  middleware.validateEmail,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const { walletAddress, email } = req.params;
+      const user = await endpoints.registerUser(
+        walletAddress as `0x${string}`,
+        email
+      );
+      res.status(201).json(user);
+    } catch (error: any) {
+      console.error("Error registering user:", error);
+      if (error.code === "P2002") {
+        // Prisma unique constraint violation error
+        return res
+          .status(409)
+          .json({ error: "User with this address or email already exists" });
+      }
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
+// Register user position
+app.get(
+  "/register-user-position/:walletAddress",
+  middleware.validateWalletAddress,
+  async (req: express.Request, res: express.Response) => {
+    const { walletAddress } = req.params;
+    const position = await endpoints.registerUserPosition(walletAddress);
+    res.json(position);
+  }
+);
+
+// Register user action
+app.get(
+  "/register-user-action/:walletAddress/:action/:amount",
+  middleware.validateWalletAddress,
+  middleware.validateAction,
+  middleware.validateAmount,
+  async (req: express.Request, res: express.Response) => {
+    const { walletAddress, action, amount } = req.params;
+    const actionData = await endpoints.registerUserAction(
+      walletAddress,
+      action as "DEPOSIT" | "WITHDRAW",
+      amount
+    );
+    res.json(actionData);
+  }
+);
+
+// Register all users positions
+app.get(
+  "/register-all-users-position",
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const result = await endpoints.registerAllUsersPosition();
+      res.json(result);
+    } catch (error) {
+      console.error("Error registering all users positions:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);

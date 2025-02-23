@@ -1,0 +1,18 @@
+name: Register User Positions
+
+on:
+  schedule:
+    # Run every hour
+    - cron: "0 * * * *"
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  register-positions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Register Positions API
+        run: |
+          curl -X POST \
+            -H "x-api-key: ${{ secrets.API_KEY }}" \
+            ${{ secrets.API_URL }}/register-all-users-position

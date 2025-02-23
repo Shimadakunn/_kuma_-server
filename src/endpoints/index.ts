@@ -1,2 +1,2 @@
-export * from "./getBalance";
-export * from "./getPositions";
+export * from "./GET";
+export * from "./POST";
