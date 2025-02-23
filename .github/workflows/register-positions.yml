@@ -13,6 +13,6 @@ jobs:
     steps:
       - name: Call Register Positions API
         run: |
-          curl -X POST \
+          curl -X GET \
             -H "x-api-key: ${{ secrets.API_KEY }}" \
             ${{ secrets.API_URL }}/register-all-users-position
