@@ -10,6 +10,7 @@ app.use(express.json());
 app.use(middleware.validateApiKey);
 
 // ==== GET ====
+
 // Get user positions
 app.get(
   "/get-user-positions/:walletAddress/:timeframe",
@@ -57,6 +58,7 @@ app.get(
 );
 
 // ==== POST ====
+
 // Register user
 app.get(
   "/register-user/:walletAddress/:email",

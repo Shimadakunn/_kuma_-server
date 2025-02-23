@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc",
+    "build": "prisma generate && prisma db push && tsc",
     "serve": "node dist/index.js",
     "dev": "nodemon src/index.ts"
   },
