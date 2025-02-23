@@ -86,41 +86,58 @@ export async function getUserPositions(address: string, timeframe: Timeframe) {
       positions = distributedPositions;
     }
 
-    // If we have fewer positions than needed, add empty positions
+    // If we have fewer positions than needed, add empty positions only for older timestamps
     if (positions.length < POSITIONS_COUNT) {
       const numEmptyPositions = POSITIONS_COUNT - positions.length;
-      const lastTimestamp =
+      const oldestExistingTimestamp =
         positions.length > 0
           ? new Date(positions[positions.length - 1].timestamp)
-          : startDate;
+          : new Date();
 
-      const interval = milliseconds / (POSITIONS_COUNT - 1);
+      // Calculate time interval between start date and oldest existing position
+      const timeRange = Math.max(
+        oldestExistingTimestamp.getTime() - startDate.getTime(),
+        milliseconds / POSITIONS_COUNT // Ensure minimum spacing
+      );
+      const interval = timeRange / Math.max(numEmptyPositions, 1);
+
       const emptyPositions = Array.from(
         { length: numEmptyPositions },
         (_, index) => {
-          const existingCount = positions.length;
-          const position = existingCount + index + 1;
-          const timestamp = new Date(startDate.getTime() + position * interval);
+          const timestamp = new Date(
+            Math.max(
+              oldestExistingTimestamp.getTime() - (index + 1) * interval,
+              startDate.getTime()
+            )
+          );
           return createEmptyPosition(timestamp.toISOString());
         }
       );
 
       positions.push(...emptyPositions);
     }
-  } else if (positions.length < 5) {
-    // For 'H' timeframe, ensure at least 5 positions
-    const numEmptyPositions = 5 - positions.length;
-    const lastTimestamp =
+  } else if (positions.length < POSITIONS_COUNT) {
+    // For hourly timeframe, ensure POSITIONS_COUNT positions
+    const numEmptyPositions = POSITIONS_COUNT - positions.length;
+    const oldestExistingTimestamp =
       positions.length > 0
         ? new Date(positions[positions.length - 1].timestamp)
-        : startDate;
+        : new Date();
 
-    const interval = milliseconds / 4; // Divide hour into 4 intervals for 5 points
+    const timeRange = Math.max(
+      oldestExistingTimestamp.getTime() - startDate.getTime(),
+      milliseconds / POSITIONS_COUNT
+    );
+    const interval = timeRange / Math.max(numEmptyPositions, 1);
+
     const emptyPositions = Array.from(
       { length: numEmptyPositions },
       (_, index) => {
         const timestamp = new Date(
-          lastTimestamp.getTime() - (index + 1) * interval
+          Math.max(
+            oldestExistingTimestamp.getTime() - (index + 1) * interval,
+            startDate.getTime()
+          )
         );
         return createEmptyPosition(timestamp.toISOString());
       }
