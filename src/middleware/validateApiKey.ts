@@ -9,7 +9,17 @@ export const validateApiKey = (
 ) => {
   const apiKey = req.headers["x-api-key"];
 
-  if (!apiKey || apiKey !== API_KEY) {
+  if (!API_KEY) {
+    console.error("API_KEY environment variable is not set");
+    return res.status(500).json({ error: "Server configuration error" });
+  }
+
+  if (!apiKey) {
+    return res.status(401).json({ error: "Missing API key" });
+  }
+
+  if (apiKey !== API_KEY) {
+    console.warn(`Invalid API key attempt: ${apiKey}`);
     return res.status(401).json({ error: "Invalid API key" });
   }
 
