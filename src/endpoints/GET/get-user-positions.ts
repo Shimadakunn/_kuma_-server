@@ -117,34 +117,37 @@ export async function getUserPositions(address: string, timeframe: Timeframe) {
 
       positions.push(...emptyPositions);
     }
-  } else if (positions.length < POSITIONS_COUNT) {
-    // For hourly timeframe, ensure POSITIONS_COUNT positions
-    const numEmptyPositions = POSITIONS_COUNT - positions.length;
-    const oldestExistingTimestamp =
-      positions.length > 0
-        ? new Date(positions[positions.length - 1].timestamp)
-        : new Date();
+  } else if (timeframe === "H") {
+    // For hourly timeframe, if we have less than 3 positions, ensure at least 5 positions
+    if (positions.length < 3) {
+      const minPositions = 5;
+      const numEmptyPositions = minPositions - positions.length;
+      const oldestExistingTimestamp =
+        positions.length > 0
+          ? new Date(positions[positions.length - 1].timestamp)
+          : new Date();
 
-    const timeRange = Math.max(
-      oldestExistingTimestamp.getTime() - startDate.getTime(),
-      milliseconds / POSITIONS_COUNT
-    );
-    const interval = timeRange / Math.max(numEmptyPositions, 1);
+      const timeRange = Math.max(
+        oldestExistingTimestamp.getTime() - startDate.getTime(),
+        milliseconds / minPositions
+      );
+      const interval = timeRange / Math.max(numEmptyPositions, 1);
 
-    const emptyPositions = Array.from(
-      { length: numEmptyPositions },
-      (_, index) => {
-        const timestamp = new Date(
-          Math.max(
-            oldestExistingTimestamp.getTime() - (index + 1) * interval,
-            startDate.getTime()
-          )
-        );
-        return createEmptyPosition(timestamp.toISOString());
-      }
-    );
+      const emptyPositions = Array.from(
+        { length: numEmptyPositions },
+        (_, index) => {
+          const timestamp = new Date(
+            Math.max(
+              oldestExistingTimestamp.getTime() - (index + 1) * interval,
+              startDate.getTime()
+            )
+          );
+          return createEmptyPosition(timestamp.toISOString());
+        }
+      );
 
-    positions.push(...emptyPositions);
+      positions.push(...emptyPositions);
+    }
   }
 
   // Sort positions by timestamp in descending order
