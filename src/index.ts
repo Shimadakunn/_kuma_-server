@@ -58,6 +58,25 @@ app.get(
   }
 );
 
+// Get user notification
+app.get(
+  "/get-user-notification/:walletAddress",
+  middleware.validateWalletAddress,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const { walletAddress } = req.params;
+      const notification = await endpoints.getUserNotification(walletAddress);
+      if (!notification) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(notification);
+    } catch (error) {
+      console.error("Error fetching user notification:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
 // ==== POST ====
 
 // Register user
@@ -111,6 +130,20 @@ app.get(
       amount
     );
     res.json(actionData);
+  }
+);
+
+// Register user notification
+app.get(
+  "/register-user-notification/:walletAddress/:notifications",
+  middleware.validateWalletAddress,
+  async (req: express.Request, res: express.Response) => {
+    const { walletAddress, notifications } = req.params;
+    const notificationData = await endpoints.registerUserNotification(
+      walletAddress,
+      notifications === "true" ? true : false
+    );
+    res.json(notificationData);
   }
 );
 

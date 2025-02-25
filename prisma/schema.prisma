@@ -15,6 +15,7 @@ model User {
   lastConnectedAt DateTime?
   userPositions   UserPosition[]
   userActions   UserAction[]
+  notifications   Boolean   @default(true)
 }
 
 model UserPosition {
