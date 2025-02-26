@@ -3,7 +3,7 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 
 const prisma = new PrismaClient().$extends(withAccelerate());
 
-export type Timeframe = "1H" | "1D" | "1W" | "1M" | "1Y" | "ALL";
+export type Timeframe = "1H" | "1D" | "1W" | "1M" | "1Y" | "MAX";
 
 const timeframeToMilliseconds = {
   "1H": 60 * 60 * 1000, // 1 hour
@@ -11,7 +11,7 @@ const timeframeToMilliseconds = {
   "1W": 7 * 24 * 60 * 60 * 1000, // 1 week
   "1M": 30 * 24 * 60 * 60 * 1000, // ~1 month
   "1Y": 365 * 24 * 60 * 60 * 1000, // ~1 year
-  ALL: Infinity,
+  MAX: Infinity,
 };
 
 type Position = UserPosition;

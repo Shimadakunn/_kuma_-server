@@ -6,7 +6,7 @@ enum Timeframe {
   W = "1W", // Week
   M = "1M", // Month
   Y = "1Y", // Year
-  ALL = "ALL", // All time
+  MAX = "MAX", // All time
 }
 
 // Middleware to validate timeframe
