@@ -66,7 +66,9 @@ app.get(
   async (req: express.Request, res: express.Response) => {
     try {
       const { walletAddress } = req.params;
-      const notification = await endpoints.getUserNotification(walletAddress);
+      const notification = await endpoints.getUserNotification(
+        walletAddress as `0x${string}`
+      );
       if (!notification) {
         return res.status(404).json({ error: "User not found" });
       }

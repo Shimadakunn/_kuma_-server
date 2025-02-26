@@ -3,14 +3,14 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 
 const prisma = new PrismaClient().$extends(withAccelerate());
 
-export async function getUserNotification(address: string) {
+export async function getUserNotification(walletAddress: string) {
   const user = await prisma.user.findUnique({
     where: {
-      address,
+      address: walletAddress,
     },
   });
   if (!user) {
     return null;
   }
-  return user.notifications;
+  return user;
 }
