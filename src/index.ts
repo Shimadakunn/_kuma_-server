@@ -2,6 +2,7 @@ import express from "express";
 import * as endpoints from "./endpoints";
 import * as middleware from "./middleware";
 import { Action } from "@prisma/client";
+import { Timeframe } from "./endpoints";
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -22,7 +23,7 @@ app.get(
       const { walletAddress, timeframe } = req.params;
       const positions = await endpoints.getUserPositions(
         walletAddress,
-        timeframe as "H" | "D" | "M" | "Y"
+        timeframe as Timeframe
       );
 
       if (!positions) {
