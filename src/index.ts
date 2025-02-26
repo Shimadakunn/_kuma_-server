@@ -17,7 +17,7 @@ app.use(middleware.validateApiKey);
 app.get(
   "/get-user-positions/:walletAddress/:timeframe",
   middleware.validateWalletAddress,
-  middleware.validateTimeframe,
+  // middleware.validateTimeframe,
   async (req: express.Request, res: express.Response) => {
     try {
       const { walletAddress, timeframe } = req.params;
