@@ -32,8 +32,10 @@ const createEmptyPosition = (timestamp: string): Position => ({
 const POSITIONS_COUNT = 20;
 
 export async function getUserPositions(address: string, timeframe: Timeframe) {
-  const milliseconds = timeframeToMilliseconds[timeframe];
-  const startDate = new Date(Date.now() - milliseconds);
+  const startDate =
+    timeframe === "MAX"
+      ? new Date(0) // Unix epoch start for MAX timeframe
+      : new Date(Date.now() - timeframeToMilliseconds[timeframe]);
 
   const user = await prisma.user.findUnique({
     where: { address },
