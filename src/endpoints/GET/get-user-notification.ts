@@ -12,5 +12,5 @@ export async function getUserNotification(walletAddress: string) {
   if (!user) {
     return null;
   }
-  return user;
+  return user.notifications;
 }
