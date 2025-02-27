@@ -29,9 +29,11 @@ const createEmptyPosition = (timestamp: string): Position => ({
   totalCollectedFees: "0",
 });
 
-const POSITIONS_COUNT = 20;
+const getPositionsCount = (timeframe: Timeframe) =>
+  timeframe === "1H" ? 5 : 20;
 
 export async function getUserPositions(address: string, timeframe: Timeframe) {
+  const POSITIONS_COUNT = getPositionsCount(timeframe);
   const startDate =
     timeframe === "MAX"
       ? new Date(0) // Unix epoch start for MAX timeframe
