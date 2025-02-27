@@ -30,7 +30,7 @@ const createEmptyPosition = (timestamp: string): Position => ({
 });
 
 const getPositionsCount = (timeframe: Timeframe) =>
-  timeframe === "1H" ? 5 : 20;
+  timeframe === "1H" ? null : 20;
 
 export async function getUserPositions(address: string, timeframe: Timeframe) {
   const POSITIONS_COUNT = getPositionsCount(timeframe);
@@ -58,7 +58,15 @@ export async function getUserPositions(address: string, timeframe: Timeframe) {
     timestamp: new Date(position.timestamp).toISOString(),
   }));
 
-  // Always want 20 positions
+  // For 1H timeframe, return all positions without distribution
+  if (POSITIONS_COUNT === null) {
+    return {
+      ...user,
+      userPositions: positions,
+    };
+  }
+
+  // For other timeframes, keep the distribution logic
   if (positions.length >= POSITIONS_COUNT) {
     // Keep most recent position
     const distributedPositions = [positions[0]];
