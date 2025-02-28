@@ -60,6 +60,27 @@ export async function getUserPositions(address: string, timeframe: Timeframe) {
 
   // For 1H timeframe, return all positions without distribution
   if (POSITIONS_COUNT === null) {
+    if (positions.length < 3) {
+      const timeRange = Date.now() - startDate.getTime();
+      const interval = timeRange / 6; // Divide into 6 segments to get 5 points
+      const numEmptyPositions = 5 - positions.length;
+
+      const emptyPositions = Array.from(
+        { length: numEmptyPositions },
+        (_, index) => {
+          const timestamp = new Date(
+            startDate.getTime() + interval * (index + 1)
+          );
+          return createEmptyPosition(timestamp.toISOString());
+        }
+      );
+
+      positions = [...positions, ...emptyPositions].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+    }
+
     return {
       ...user,
       userPositions: positions,
