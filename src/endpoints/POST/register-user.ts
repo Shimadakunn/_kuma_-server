@@ -25,6 +25,20 @@ export async function registerUser(address: string, email: string) {
       lastConnectedAt: new Date(),
     },
   });
+
+  await prisma.userPosition.create({
+    data: {
+      userId: user.id,
+      timestamp: new Date().toISOString(),
+      vaultBalance: "0",
+      lastRecordedBalance: "0",
+      pendingYield: "0",
+      pendingFee: "0",
+      userBalance: "0",
+      userPrincipal: "0",
+      totalCollectedFees: "0",
+    },
+  });
   registerUserPosition(address);
 
   return user;
