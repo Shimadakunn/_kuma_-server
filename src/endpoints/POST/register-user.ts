@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { withAccelerate } from "@prisma/extension-accelerate";
-
+import { registerUserPosition } from "./register-user-position";
 const prisma = new PrismaClient().$extends(withAccelerate());
 
 export async function registerUser(address: string, email: string) {
@@ -11,10 +11,11 @@ export async function registerUser(address: string, email: string) {
   });
 
   if (existingUser) {
-    return prisma.user.update({
+    await prisma.user.update({
       where: { id: existingUser.id },
       data: { lastConnectedAt: new Date() },
     });
+    return existingUser;
   }
 
   const user = await prisma.user.create({
@@ -24,6 +25,7 @@ export async function registerUser(address: string, email: string) {
       lastConnectedAt: new Date(),
     },
   });
+  registerUserPosition(address);
 
   return user;
 }
