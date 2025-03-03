@@ -178,6 +178,26 @@ app.get(
   }
 );
 
+// Sign moonpay
+app.post(
+  "/sign-moonpay",
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const { url } = req.body;
+      if (!url) {
+        return res
+          .status(400)
+          .json({ error: "URL is required in request body" });
+      }
+      const signature = await endpoints.signMoonpay(url);
+      res.json({ signature });
+    } catch (error) {
+      console.error("Error signing Moonpay URL:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+);
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
