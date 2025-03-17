@@ -3,10 +3,17 @@ import * as endpoints from "./endpoints";
 import * as middleware from "./middleware";
 import { Action } from "@prisma/client";
 import { Timeframe } from "./endpoints";
+import cors from "cors";
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 // Apply API key validation to all routes
 app.use(middleware.validateApiKey);
