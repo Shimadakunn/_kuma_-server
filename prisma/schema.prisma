@@ -48,3 +48,9 @@ model UserAction {
   status    String
   error    String?
 }
+
+model WaitingList {
+  id        Int     @id @default(autoincrement())
+  email   String  @unique
+  createdAt DateTime @default(now())
+}

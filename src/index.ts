@@ -198,6 +198,17 @@ app.post(
   }
 );
 
+// Register waiting list
+app.get(
+  "/register-waiting-list/:email",
+  middleware.validateEmail,
+  async (req: express.Request, res: express.Response) => {
+    const { email } = req.params;
+    const waitingList = await endpoints.registerWaitingList(email);
+    res.json(waitingList);
+  }
+);
+
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
