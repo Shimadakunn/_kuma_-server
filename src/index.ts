@@ -221,8 +221,8 @@ app.get(
 // Get all users
 app.post("/webhook", async (req: express.Request, res: express.Response) => {
   const data = req.body;
-  await endpoints.registerMoonpayEvent(data);
-  res.status(200).json({ status: "success", data: data });
+  await endpoints.registerMoonpayEvent(data); // req.body is already parsed by express.json() middleware
+  res.status(200).json({ status: "success", data });
 });
 
 app.listen(port, () => {
