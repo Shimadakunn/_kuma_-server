@@ -17,7 +17,7 @@ app.use(
 );
 
 // Apply API key validation to all routes
-app.use(middleware.validateApiKey);
+// app.use(middleware.validateApiKey);
 app.use(bodyParser.json());
 
 // ==== GET ====
