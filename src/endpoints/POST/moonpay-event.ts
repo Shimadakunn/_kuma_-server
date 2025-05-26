@@ -6,12 +6,18 @@ const prisma = new PrismaClient().$extends(withAccelerate());
 export async function registerMoonpayEvent(data: any) {
   console.log("Received webhook data:", JSON.stringify(data, null, 2));
 
-  if (!data || !data.responseBody) {
-    console.error("Invalid webhook data: responseBody is missing");
+  if (!data || !data.data) {
+    console.error("Invalid webhook data: data field is missing");
     return;
   }
 
-  const { responseBody } = data;
+  let responseBody;
+  try {
+    responseBody = JSON.parse(data.data);
+  } catch (e) {
+    console.error("Failed to parse webhook data:", e);
+    return;
+  }
 
   if (!responseBody.walletAddress) {
     console.error("Invalid responseBody: walletAddress is missing");
