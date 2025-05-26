@@ -1,4 +1,5 @@
 import express from "express";
+import bodyParser from "body-parser";
 import * as endpoints from "./endpoints";
 import * as middleware from "./middleware";
 import { Action } from "@prisma/client";
@@ -17,6 +18,7 @@ app.use(
 
 // Apply API key validation to all routes
 app.use(middleware.validateApiKey);
+app.use(bodyParser.json());
 
 // ==== GET ====
 
@@ -215,6 +217,14 @@ app.get(
     res.json(waitingList);
   }
 );
+
+// Get all users
+app.post("/webhook", (req, res) => {
+  // req.body contains the parsed JSON payload
+  const data = req.body;
+  console.log(`Received data: ${JSON.stringify(data)}`);
+  res.status(200).json({ status: "success" });
+});
 
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
