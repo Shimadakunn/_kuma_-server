@@ -6,3 +6,4 @@ export * from "./register-all-users-rewards";
 export * from "./register-user-notification";
 export * from "./sign-moonpay";
 export * from "./register-waiting-list";
+export * from "./moonpay-event";
