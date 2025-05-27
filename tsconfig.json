@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@/*": ["./*"]
+      "~/*": ["./*"]
     }
   },
   "include": ["src/**/*", "utils/**/*", "prisma/**/*"],

@@ -4,7 +4,7 @@ import {
   getStartDate,
   prisma,
   type Timeframe,
-} from "@/utils";
+} from "~/utils";
 import { type User, type UserPosition } from "@prisma/client";
 
 export async function getUserPositions(user: User, timeframe: Timeframe) {

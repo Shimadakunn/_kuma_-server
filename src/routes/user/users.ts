@@ -1,5 +1,5 @@
 import express from "express";
-import { validateWallet, validateEmail, getUser, prisma } from "@/utils";
+import { validateWallet, validateEmail, getUser, prisma } from "~/utils";
 
 const router = express.Router();
 
