@@ -11,13 +11,7 @@ export async function registerMoonpayEvent(data: any) {
     return;
   }
 
-  let responseBody;
-  try {
-    responseBody = JSON.parse(data.data);
-  } catch (e) {
-    console.error("Failed to parse webhook data:", e);
-    return;
-  }
+  const responseBody = data.data;
 
   if (!responseBody.walletAddress) {
     console.error("Invalid responseBody: walletAddress is missing");
@@ -34,7 +28,7 @@ export async function registerMoonpayEvent(data: any) {
   });
 
   if (!user) {
-    console.log(`User not found`);
+    console.log(`User not found`, walletAddress);
     return;
   }
 
