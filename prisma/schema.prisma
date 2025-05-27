@@ -9,12 +9,13 @@ datasource db {
 
 model User {
   id        Int     @id @default(autoincrement())
-  address      String   @unique
+  wallet      String   @unique
   email   String   @unique
   createdAt DateTime @default(now())
   lastConnectedAt DateTime?
   userPositions   UserPosition[]
   userActions   UserAction[]
+  userRamps    UserRamp[]
   notifications   Boolean   @default(true)
 }
 
@@ -47,6 +48,21 @@ model UserAction {
   amount     String
   status    String
   error    String?
+}
+
+enum RampType {
+  ONRAMP
+  OFFRAMP
+}
+
+model UserRamp {
+  id        Int     @id @default(autoincrement())
+  user    User    @relation(fields: [userId], references: [id])
+  userId  Int
+  timestamp     String
+  type    RampType
+  amount     String
+  txId     String
 }
 
 model WaitingList {

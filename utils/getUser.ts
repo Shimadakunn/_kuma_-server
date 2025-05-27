@@ -3,17 +3,23 @@ import { withAccelerate } from "@prisma/extension-accelerate";
 
 const prisma = new PrismaClient().$extends(withAccelerate());
 
-export async function getUserActions(address: string) {
+export const getUser = async (
+  wallet: string,
+  userActions: boolean = false,
+  userPositions: boolean = false
+) => {
+  // -- GET USER
   const user = await prisma.user.findUnique({
     where: {
-      address,
+      wallet,
     },
     include: {
-      userActions: true,
+      userActions: userActions,
+      userPositions: userPositions,
     },
   });
-  if (!user) {
-    return null;
-  }
+
+  // -- CHECK IF USER EXISTS
+  if (!user) return null;
   return user;
-}
+};

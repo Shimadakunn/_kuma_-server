@@ -1,7 +1,6 @@
 import { createPublicClient, http } from "viem";
 import { arbitrumSepolia } from "viem/chains";
 
-// Function to randomly select one of the API keys
 const getRandomApiKey = () => {
   const keys = [process.env.INFURA_API_KEY, process.env.INFURA_API_KEY_2];
   const randomIndex = Math.floor(Math.random() * keys.length);
