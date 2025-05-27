@@ -1,0 +1,29 @@
+name: Set User Positions
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: "*/10 * * * *"
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  set-user-positions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Set Positions API
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X GET \
+            -H "x-api-key: ${{ secrets.API_KEY }}" \
+            ${{ secrets.API_URL }}/user/positions/set)
+
+          status_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "Status code: $status_code"
+          echo "Response body: $body"
+
+          if [ "$status_code" -lt 200 ] || [ "$status_code" -ge 300 ]; then
+            echo "API call failed with status code $status_code"
+            exit 1
+          fi
