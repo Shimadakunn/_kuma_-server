@@ -7,7 +7,7 @@ import {
   client,
   emptyUserPosition,
   prisma,
-} from "~/utils";
+} from "../../../../utils";
 
 export const setUserPosition = async (user: User) => {
   const wallet = user.wallet as Address;

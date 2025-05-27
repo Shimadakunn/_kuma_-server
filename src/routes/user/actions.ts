@@ -5,7 +5,7 @@ import {
   validateAction,
   validateAmount,
   prisma,
-} from "~/utils";
+} from "../../../utils";
 import { Action } from "@prisma/client";
 
 const router = express.Router();

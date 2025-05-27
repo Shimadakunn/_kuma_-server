@@ -1,5 +1,5 @@
 import express from "express";
-import { validateEmail, prisma } from "~/utils";
+import { validateEmail, prisma } from "../../../utils";
 
 const waitingList = express.Router();
 
