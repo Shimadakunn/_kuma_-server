@@ -6,6 +6,8 @@ import moonpay from "./routes/moonpay";
 const app = express();
 app.use(express.json());
 
+// TO DO: Add cors, add bearer token auth
+
 app.get("/", (req, res) => {
   return res.json({
     status: "ok",

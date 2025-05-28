@@ -8,8 +8,6 @@ import {
 import { type User, type UserPosition } from "@prisma/client";
 
 export async function getUserPositions(user: User, timeframe: Timeframe) {
-  console.log("getUserPositions", user.wallet, timeframe);
-
   // -- GET START DATE FROM TIMEFRAME
   const startDate = getStartDate(timeframe);
 

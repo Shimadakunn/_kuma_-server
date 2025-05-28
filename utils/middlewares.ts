@@ -2,6 +2,7 @@ import { Action } from "@prisma/client";
 import type { Timeframe } from "./types.js";
 import { NextFunction, Request, Response } from "express";
 
+const API_KEY = process.env.API_KEY;
 const VALID_TIMEFRAMES: Timeframe[] = ["1H", "1D", "1W", "1M", "1Y", "MAX"];
 
 export const validateWallet = async (
@@ -75,5 +76,17 @@ export const validateTimeframe = async (
   console.log("validateTimeframe", timeframe);
   if (!VALID_TIMEFRAMES.includes(timeframe as Timeframe))
     return res.status(400).json({ error: "Invalid timeframe" });
+  next();
+};
+
+export const validateBearerToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!API_KEY) return res.status(400).json({ error: "API key is not set" });
+  const token = req.headers.authorization;
+  if (token !== API_KEY)
+    return res.status(401).json({ error: "Invalid API key" });
   next();
 };

@@ -9,7 +9,8 @@ const getRandomApiKey = () => {
 
 const client = createPublicClient({
   chain: arbitrumSepolia,
-  transport: http(`https://arbitrum-sepolia.infura.io/v3/${getRandomApiKey()}`),
+  transport: http(),
+  // transport: http(`https://arbitrum-sepolia.infura.io/v3/${getRandomApiKey()}`),
 });
 
 export { client };
