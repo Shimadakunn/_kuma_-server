@@ -12,6 +12,8 @@ import {
 export const setUserPosition = async (user: User) => {
   const wallet = user.wallet as Address;
 
+  console.log("publicClient", client);
+
   // -- GET USER VAULT
   const userVault = await client.readContract({
     address: FACTORY_ADDRESS,
@@ -19,6 +21,8 @@ export const setUserPosition = async (user: User) => {
     functionName: "userVaults",
     args: [wallet],
   });
+
+  console.log("userVault", userVault);
 
   // -- CREATE USER POSITION IF USER HAS NO VAULT
   let userPosition;

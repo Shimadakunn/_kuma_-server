@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "nodemon src/index.ts",
     "start": "ts-node src/index.ts",
-    "build": "npx prisma generate && tsc",
-    "postinstall": "prisma generate"
+    "build": "npx prisma generate --no-engine && tsc",
+    "postinstall": "prisma generate --no-engine"
   },
   "keywords": [],
   "author": "",
