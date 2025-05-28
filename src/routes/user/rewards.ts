@@ -67,6 +67,6 @@ router.get("/set", async (req, res) => {
     }
   });
 
-  return;
+  return res.json({ message: "Rewards set successfully" });
 });
 export default router;
